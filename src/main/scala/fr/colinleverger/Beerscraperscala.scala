@@ -1,5 +1,5 @@
 package fr.colinleverger
 
-object Beerscraperscala extends App {
+object beerScraperScala extends App {
   println("Hello, beer-scraper-scala")
 }
