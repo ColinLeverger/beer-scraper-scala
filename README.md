@@ -1,5 +1,15 @@
-A sample for the Typesafe Stack (http://typesafe.com/stack).
+# Beer Scraper in Scala
 
-Scala sample project using Scala and SBT.
+Simple scrapper, developed using Scala 2.12.1, https://github.com/ruippeixotog/scala-scraper and Scalatests.
 
-To run and test it use SBT invoke: 'sbt run'
+Scrapping http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text, following the tutorial http://blog.kaggle.com/2017/01/31/scraping-for-craft-beers-a-dataset-creation-tutorial/
+
+Work in progress...
+
+# How does it work?
+
+`sbt test`
+
+`sbt run`
+
+_todo_
