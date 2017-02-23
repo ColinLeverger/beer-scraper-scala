@@ -5,16 +5,16 @@ import org.scalatest._
 class beerScraperScalaTests extends FlatSpec with Matchers {
 
   val beersUrl: String = "http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text"
-  val doc = beerScraperScala.getDocument(beersUrl)
-  val beersHtml = beerScraperScala.getBeersList(doc)
-  val beers = beerScraperScala.getBeers(beersHtml)
+  val doc = BeerScraperScala.getDocument(beersUrl)
+  val beersHtml = BeerScraperScala.getBeersList(doc)
+  val beers = BeerScraperScala.getBeers(beersHtml)
 
   "A beerScrapper" should " provide a function to get HTML from URL" in {
-    assert(!beerScraperScala.getDocument("http://colinleverger.fr").isEmpty)
-    assert(beerScraperScala.getDocument("thisIsNotAnUrl").isEmpty)
-    assert(beerScraperScala.getDocument("http://colinleverger.com").isEmpty)
-    assert(!beerScraperScala.getDocument("http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text").isEmpty)
-    assert(!beerScraperScala.getDocument(beersUrl).isEmpty)
+    assert(!BeerScraperScala.getDocument("http://colinleverger.fr").isEmpty)
+    assert(BeerScraperScala.getDocument("thisIsNotAnUrl").isEmpty)
+    assert(BeerScraperScala.getDocument("http://colinleverger.com").isEmpty)
+    assert(!BeerScraperScala.getDocument("http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text").isEmpty)
+    assert(!BeerScraperScala.getDocument(beersUrl).isEmpty)
   }
   it should "decompose the html in a raw non empty beer list" in {
     assert(beersHtml.getOrElse(None) != None)

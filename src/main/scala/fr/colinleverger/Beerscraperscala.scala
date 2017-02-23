@@ -11,11 +11,12 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.{read, write}
 
-object beerScraperScala extends App {
+object BeerScraperScala extends App {
   val beersUrl: String = "http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text"
 
   /**
     * Case class defining a beer
+    *
     * @param entry
     * @param beerName
     * @param brewery
@@ -25,7 +26,7 @@ object beerScraperScala extends App {
     * @param abv
     * @param ibus
     */
-  case class beer(
+  case class Beer(
     entry: String,
     beerName: String,
     brewery: String,
@@ -63,15 +64,16 @@ object beerScraperScala extends App {
 
   /**
     * Get beers from beersHtmlList
+    *
     * @param beersHtmlList
     * @return List[beer]
     */
-  def getBeers(beersHtmlList: Option[List[Iterable[String]]]): List[beer] = {
+  def getBeers(beersHtmlList: Option[List[Iterable[String]]]): List[Beer] = {
     for {
       beerHtmlIterable <- beersHtmlList.getOrElse(List());
       beerHtlm = beerHtmlIterable.toList
     } yield {
-      beer(
+      Beer(
         entry = beerHtlm(0), beerName = beerHtlm(1), brewery = beerHtlm(2),
         location = beerHtlm(3), style = beerHtlm(4), size = beerHtlm(5),
         abv = beerHtlm(6), ibus = beerHtlm(7)
