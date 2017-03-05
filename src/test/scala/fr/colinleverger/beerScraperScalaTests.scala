@@ -7,7 +7,9 @@ class beerScraperScalaTests extends FlatSpec with Matchers {
   val beersUrl: String = "http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text"
   val doc = BeerScraperScala.getDocument(beersUrl)
   val beersHtml = BeerScraperScala.getBeersList(doc)
-  val beers = BeerScraperScala.getRawBeers(beersHtml)
+  val rawBeers = BeerScraperScala.getRawBeers(beersHtml)
+  val breweries = BeerScraperScala.getBreweries(rawBeers)
+  val beers = BeerScraperScala.getBeers(rawBeers, breweries)
 
   "A beerScrapper" should " provide a function to get HTML from URL" in {
     assert(!BeerScraperScala.getDocument("http://colinleverger.fr").isEmpty)
@@ -21,16 +23,16 @@ class beerScraperScalaTests extends FlatSpec with Matchers {
   }
 
   "A getBeers function" should "provide a label in first value which contains BEER and LOCATION" in {
-    assert(beers.head.beerName == "BEER")
-    assert(beers.head.location == "LOCATION")
+    assert(rawBeers.head.beerName == "BEER")
+    assert(rawBeers.head.location == "LOCATION")
   }
 
   it should "provide a list of beers which is not empty" in {
-    assert(!beers.isEmpty)
+    assert(!rawBeers.isEmpty)
   }
 
   it should "find the 'Get Together' beer" in {
-    val getTogether = beers.filter(_.beerName == "Get Together")
+    val getTogether = rawBeers.filter(_.beerName == "Get Together")
     assert(getTogether.nonEmpty)
     val theBeer = getTogether.head
     assert(theBeer.entry == "2692.")
@@ -44,7 +46,6 @@ class beerScraperScalaTests extends FlatSpec with Matchers {
   }
 
   "A getBrewerie function" should "provide a list a breweries with no dooble values" in {
-    val breweries = BeerScraperScala.getBreweries(beers)
     assert(breweries.nonEmpty)
     val testBrewerie = breweries.filter(_.name == "NorthGate Brewing")
     assert(testBrewerie.size == 1)
@@ -52,5 +53,20 @@ class beerScraperScalaTests extends FlatSpec with Matchers {
     assert(testBrewerie.head.zipCode == "MN")
   }
 
+  "A getBeers function" should "provide a list a beers" in {
+    assert(beers.nonEmpty)
+    assert(beers.size == 2410)
+  }
 
+  it should "should provide a list with 'Get Together' beer present and w/ good values" in {
+    val getTogether = beers.filter(_.beerName == "Get Together")
+    assert(getTogether.nonEmpty)
+    val theBeer = getTogether.head
+    assert(theBeer.entry == "2692")
+    assert(theBeer.beerName == "Get Together")
+    assert(theBeer.style == "American IPA")
+    assert(theBeer.size == 16.0)
+    assert(theBeer.abv.getOrElse(0.0) == 0.045)
+    assert(theBeer.ibus == "50")
+  }
 }

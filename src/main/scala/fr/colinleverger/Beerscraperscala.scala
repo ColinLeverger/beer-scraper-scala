@@ -53,6 +53,7 @@ object BeerScraperScala extends App {
 
   /**
     * Case class defining a cleaned beer
+    *
     * @param entry
     * @param beerName
     * @param breweryId
@@ -64,11 +65,11 @@ object BeerScraperScala extends App {
   case class Beer(
     entry: String,
     beerName: String,
-    breweryId: String,
+    breweryId: Int,
     style: String,
     size: Float,
-    abv: Float,
-    ibus: Int
+    abv: Option[Double],
+    ibus: String
   )
 
   /**
@@ -124,10 +125,25 @@ object BeerScraperScala extends App {
   // Treat the list to create a list of 'beer' objects
   val rawBeers = getRawBeers(beersHtmlList)
 
+  /**
+    * Clean the data
+    *
+    * @param rawBeers
+    * @return (List[Brewery], List[Beer])
+    */
   def cleanBeers(rawBeers: List[rawBeer]): (List[Brewery], List[Beer]) = {
-    (getBreweries(rawBeers), getBeers(rawBeers))
+    val breweries = getBreweries(rawBeers)
+    val beers = getBeers(rawBeers, breweries)
+    (breweries, beers)
   }
 
+  /**
+    * Create the list of the breweries present in this dataset.
+    * Auto-increment "i" to index the breweries.
+    *
+    * @param beers
+    * @return
+    */
   def getBreweries(beers: List[rawBeer]): List[Brewery] = {
     val breweries = beers.groupBy(b => (b.brewery, b.location)).keys
 
@@ -143,16 +159,45 @@ object BeerScraperScala extends App {
     }
   }
 
-  def getBeers(rawBeers: List[rawBeer]): List[Beer] = ???
+  /**
+    * Create the cleaned list of beers with ref. to the breweries (breweries indexed)
+    *
+    * @param rawBeers
+    * @param brewery
+    * @return
+    */
+  def getBeers(rawBeers: List[rawBeer], brewery: List[Brewery]): List[Beer] = {
+    for {be <- rawBeers.tail} yield {
+      val abvFloat = be.abv.replaceAll("\\?", "") match {
+        case str if !str.isEmpty =>
+          Some(str.replaceAll("%", "").toDouble / 100)
+        case _ => None
+      }
+      Beer(
+        be.entry.replaceAll("\\.", ""),
+        be.beerName,
+        brewery.filter(_.location == be.location.takeWhile(c => c != ',')).head.id,
+        be.style,
+        be.size.split(" ")(0).toFloat,
+        abvFloat,
+        be.ibus
+      )
+    }
+  }
 
   // Clean beer list
   val (breweries, beers) = cleanBeers(rawBeers)
 
   // Write and print the result of experimentations in a csv
-  val csvString = beers.toCSV(";")
-  new PrintWriter("beers.csv") {
-    write(csvString);
-    close
-  }
+  val csvBeers = beers.toCSV(";")
+  val csvBreweries = breweries.toCSV(";")
+  writeToDisk("beers.csv", csvBeers)
+  writeToDisk("breweries.csv", csvBreweries)
 
+  private def writeToDisk(name: String, csv: String): Unit = {
+    new PrintWriter(name) {
+      write(csv);
+      close
+    }
+  }
 }

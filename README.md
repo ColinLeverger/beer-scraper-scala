@@ -28,4 +28,4 @@ sbt run
 
 # Sample output
 
-See [this file](beers-sample.csv). The variables have not been cleaned yet.
+See [this file](beers-sample.csv). Variables cleaned.
