@@ -1,6 +1,6 @@
 # Beer Scraper in Scala
 
-Simple scrapper, developed using `scala 2.12.1`, `ruippeixotog/scala-scraper and `scalatest`.
+Simple scrapper, developed using `scala 2.12.1`, `ruippeixotog/scala-scraper` and `scalatest`.
 
 Use of `FlatSpec`s from `scalatest` to work in TDD.
 
@@ -23,9 +23,9 @@ sbt run
 1. Connect to the website and download the HTML
 2. Parse it with the library `scala-scraper`
 3. Create a list of `Beer`s case class objects
-4. Write Json
+4. Write CSV
 5. Done!
 
 # Sample output
 
-See [this file](beers-sample.json). The variables have not been cleaned yet.
+See [this file](beers-sample.csv). The variables have not been cleaned yet.

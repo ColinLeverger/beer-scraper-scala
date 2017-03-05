@@ -7,7 +7,7 @@ class beerScraperScalaTests extends FlatSpec with Matchers {
   val beersUrl: String = "http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text"
   val doc = BeerScraperScala.getDocument(beersUrl)
   val beersHtml = BeerScraperScala.getBeersList(doc)
-  val beers = BeerScraperScala.getBeers(beersHtml)
+  val beers = BeerScraperScala.getRawBeers(beersHtml)
 
   "A beerScrapper" should " provide a function to get HTML from URL" in {
     assert(!BeerScraperScala.getDocument("http://colinleverger.fr").isEmpty)
@@ -41,6 +41,15 @@ class beerScraperScalaTests extends FlatSpec with Matchers {
     assert(theBeer.size == "16 oz.")
     assert(theBeer.abv == "4.5%")
     assert(theBeer.ibus == "50")
+  }
+
+  "A getBrewerie function" should "provide a list a breweries with no dooble values" in {
+    val breweries = BeerScraperScala.getBreweries(beers)
+    assert(breweries.nonEmpty)
+    val testBrewerie = breweries.filter(_.name == "NorthGate Brewing")
+    assert(testBrewerie.size == 1)
+    assert(testBrewerie.head.location == "Minneapolis")
+    assert(testBrewerie.head.zipCode == "MN")
   }
 
 

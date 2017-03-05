@@ -7,15 +7,14 @@ import net.ruippeixotog.scalascraper.browser._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.model.Document
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
-import org.json4s.jackson.Serialization.{read, write}
+import org.json4s.DefaultFormats
+import purecsv.safe._
 
 object BeerScraperScala extends App {
   val beersUrl: String = "http://craftcans.com/db.php?search=all&sort=beerid&ord=desc&view=text"
 
   /**
-    * Case class defining a beer
+    * Case class defining a beer data, before treatment & cleaning of the data
     *
     * @param entry
     * @param beerName
@@ -26,7 +25,7 @@ object BeerScraperScala extends App {
     * @param abv
     * @param ibus
     */
-  case class Beer(
+  case class rawBeer(
     entry: String,
     beerName: String,
     brewery: String,
@@ -35,6 +34,41 @@ object BeerScraperScala extends App {
     size: String,
     abv: String,
     ibus: String
+  )
+
+  /**
+    * Case class defining a brewery
+    *
+    * @param id
+    * @param name
+    * @param location
+    * @param zipCode
+    */
+  case class Brewery(
+    id: Int,
+    name: String,
+    location: String,
+    zipCode: String
+  )
+
+  /**
+    * Case class defining a cleaned beer
+    * @param entry
+    * @param beerName
+    * @param breweryId
+    * @param style
+    * @param size
+    * @param abv
+    * @param ibus
+    */
+  case class Beer(
+    entry: String,
+    beerName: String,
+    breweryId: String,
+    style: String,
+    size: Float,
+    abv: Float,
+    ibus: Int
   )
 
   /**
@@ -68,12 +102,12 @@ object BeerScraperScala extends App {
     * @param beersHtmlList
     * @return List[beer]
     */
-  def getBeers(beersHtmlList: Option[List[Iterable[String]]]): List[Beer] = {
+  def getRawBeers(beersHtmlList: Option[List[Iterable[String]]]): List[rawBeer] = {
     for {
       beerHtmlIterable <- beersHtmlList.getOrElse(List());
       beerHtlm = beerHtmlIterable.toList
     } yield {
-      Beer(
+      rawBeer(
         entry = beerHtlm(0), beerName = beerHtlm(1), brewery = beerHtlm(2),
         location = beerHtlm(3), style = beerHtlm(4), size = beerHtlm(5),
         abv = beerHtlm(6), ibus = beerHtlm(7)
@@ -88,13 +122,36 @@ object BeerScraperScala extends App {
   val beersHtmlList = getBeersList(doc)
 
   // Treat the list to create a list of 'beer' objects
-  val beers = getBeers(beersHtmlList)
-  implicit val formats = DefaultFormats
+  val rawBeers = getRawBeers(beersHtmlList)
 
-  // Write and print the result of experimentations in a json string
-  val jsonString = write(beers)
-  new PrintWriter("beers.json") {
-    write(jsonString);
+  def cleanBeers(rawBeers: List[rawBeer]): (List[Brewery], List[Beer]) = {
+    (getBreweries(rawBeers), getBeers(rawBeers))
+  }
+
+  def getBreweries(beers: List[rawBeer]): List[Brewery] = {
+    val breweries = beers.groupBy(b => (b.brewery, b.location)).keys
+
+    var i = 0
+    for {b <- breweries.toList} yield {
+      i = i + 1
+      Brewery(
+        i,
+        b._1,
+        b._2.takeWhile(c => c != ','),
+        b._2.dropWhile(c => c != ',').drop(2)
+      )
+    }
+  }
+
+  def getBeers(rawBeers: List[rawBeer]): List[Beer] = ???
+
+  // Clean beer list
+  val (breweries, beers) = cleanBeers(rawBeers)
+
+  // Write and print the result of experimentations in a csv
+  val csvString = beers.toCSV(";")
+  new PrintWriter("beers.csv") {
+    write(csvString);
     close
   }
 
